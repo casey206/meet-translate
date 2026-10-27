@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>麥克風授權 · MeetTranslate</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card {
+      max-width: 470px; width: 100%;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--r-lg); padding: 38px 34px; box-shadow: var(--shadow);
+    }
+    .mk { font-family: var(--display); font-weight: 800; font-size: 14px; letter-spacing: -0.02em; text-align: center; margin-bottom: 22px; }
+    .mk b { color: var(--accent); }
+    .icon { font-size: 44px; text-align: center; margin-bottom: 12px; }
+    h1 { font-family: var(--display); font-weight: 800; font-size: 26px; text-align: center; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .lead { font-size: 13.5px; color: var(--muted); line-height: 1.75; text-align: center; margin-bottom: 24px; }
+    .status { margin-top: 18px; padding: 12px 15px; border-radius: var(--r-sm); font-size: 13px; display: none; }
+    .status.ok { display: block; background: var(--me-soft); color: var(--me); border: 1px solid rgba(14,166,114,0.3); }
+    .status.err { display: block; background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(229,72,77,0.3); }
+    .devices { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.85; }
+    .devices b { color: var(--ink); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; }
+  </style>
+</head>
+<body class="aura">
+  <div class="card">
+    <div class="mk">MEET<b>·</b>TRANSLATE</div>
+    <div class="icon">🎙️</div>
+    <h1>授權麥克風</h1>
+    <p class="lead">
+      雙向語音翻譯需要存取你的麥克風，才能聽到你說的話並翻譯給對方。<br>
+      授權後也會偵測到你的虛擬麥克風（如 BlackHole）供設定使用。
+    </p>
+    <button class="btn btn-accent" id="grant" style="width:100%;padding:13px;">允許使用麥克風</button>
+    <div class="status" id="status"></div>
+    <div class="devices" id="devices"></div>
+  </div>
+  <script src="mic-permission.js"></script>
+</body>
+</html>

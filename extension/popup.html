@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeetTranslate</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body { width: 384px; }
+    .wrap { position: relative; }
+
+    /* Hero（仿 Pandora） */
+    .hero {
+      text-align: center;
+      padding: 26px 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero .mk {
+      font-family: var(--display); font-weight: 800;
+      font-size: 25px; letter-spacing: -0.02em; color: var(--ink);
+      line-height: 1;
+    }
+    .hero .mk b { color: var(--accent); font-weight: 800; }
+    .hero .sub {
+      margin-top: 9px; font-family: var(--mono);
+      font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint);
+    }
+
+    .control { padding: 16px 18px; }
+    .start-btn { width: 100%; padding: 14px; font-size: 14.5px; font-weight: 700; border-radius: var(--r-md); }
+    .status {
+      margin-top: 11px; display: flex; align-items: center; gap: 9px;
+      padding: 9px 13px; background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--r-sm); box-shadow: var(--shadow-sm);
+    }
+    .status .txt { font-size: 11.5px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.01em; }
+    .status.is-err { background: var(--danger-soft); border-color: rgba(229,72,77,0.25); }
+    .status.is-err .txt { color: var(--danger); }
+
+    .recall {
+      display: none; margin: 0 18px 16px; padding: 12px 14px;
+      border: 1px solid rgba(47,107,255,0.25); background: var(--accent-soft);
+      border-radius: var(--r-md); align-items: center; gap: 11px;
+    }
+    .recall.show { display: flex; }
+    .recall .r-ic { font-size: 17px; }
+    .recall .r-txt { flex: 1; font-size: 12px; color: var(--ink); line-height: 1.4; font-weight: 600; }
+    .recall .r-txt small { display: block; color: var(--muted); font-size: 10.5px; margin-top: 1px; font-weight: 400; }
+    .recall .btn { padding: 7px 12px; font-size: 11.5px; }
+
+    .tabs { display: flex; padding: 0 18px; gap: 6px; border-bottom: 1px solid var(--line); }
+    .tab {
+      flex: 1; padding: 12px 4px; text-align: center; cursor: pointer;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+      color: var(--faint); border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab:hover { color: var(--muted); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .section { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .section:last-child { border-bottom: none; }
+    .section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
+    .section-head .line { flex: 1; height: 1px; background: var(--line); }
+
+    .row { display: flex; align-items: center; gap: 11px; margin-bottom: 10px; }
+    .row:last-child { margin-bottom: 0; }
+    .row .lbl { width: 86px; flex-shrink: 0; font-size: 12.5px; color: var(--ink-soft); font-weight: 500; }
+    .row .select { flex: 1; }
+
+    .note { font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 11px; }
+    .note b { color: var(--ink-soft); font-weight: 600; }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; }
+    .toggle-row .t-lbl { font-size: 13px; color: var(--ink); font-weight: 500; }
+    .toggle-row .t-lbl small { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; font-weight: 400; }
+
+    .stack > * + * { margin-top: 10px; }
+    .api-lbl { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--ink-soft); margin-bottom: 7px; font-weight: 600; }
+    .full { width: 100%; }
+
+    .hint {
+      margin-top: 13px; padding: 11px 13px; border-radius: var(--r-sm);
+      background: var(--surface-2); border: 1px solid var(--line);
+      font-size: 11px; color: var(--muted); line-height: 1.6;
+    }
+
+    .foot { padding: 14px 18px; }
+    .foot .btn { width: 100%; }
+  </style>
+</head>
+<body class="aura">
+  <div class="wrap">
+    <div class="hero">
+      <div class="mk">MEET<b>·</b>TRANSLATE</div>
+      <div class="sub">Realtime Meeting Translator</div>
+    </div>
+
+    <div class="control">
+      <button class="btn btn-accent start-btn" id="openAppBtn" style="margin-bottom:9px;"><span class="ic">🚀</span> 開啟即時翻譯介面</button>
+      <button class="btn btn-ghost start-btn" id="mainBtn" style="font-size:13px;padding:11px;"><span class="ic">▶</span> 在此會議分頁快速開始（字幕浮層）</button>
+      <div class="status" id="statusBox">
+        <span class="live-dot" id="statusDot"></span>
+        <span class="txt" id="statusText">請先開啟 Google Meet 或 Zoom</span>
+      </div>
+    </div>
+
+    <div class="recall" id="recall">
+      <span class="r-ic">📝</span>
+      <span class="r-txt">上一場會議已結束<small id="recallMeta">已記錄逐字稿</small></span>
+      <button class="btn btn-ghost" id="viewLastBtn">查看記錄</button>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="lang">語言</div>
+      <div class="tab" data-tab="voice">雙向語音</div>
+      <div class="tab" data-tab="api">API</div>
+    </div>
+
+    <!-- 語言 -->
+    <div class="tab-content active" id="tab-lang">
+      <div class="section">
+        <div class="section-head"><span class="eyebrow">翻譯方向</span><span class="line"></span></div>
+        <div class="row">
+          <span class="lbl">對方語言</span>
+          <select class="select" id="sourceLang"></select>
+        </div>
+        <div class="row">
+          <span class="lbl">對方 → 我看</span>
+          <select class="select" id="targetLang"></select>
+        </div>
+        <div class="row">
+          <span class="lbl">我說的語言</span>
+          <select class="select" id="myLang"></select>
+        </div>
+        <p class="note">我說話會翻成「對方語言」用 AI 語音講給對方（自動偵測時預設英文）。</p>
+      </div>
+      <div class="section">
+        <div class="toggle-row">
+          <span class="t-lbl">字幕顯示原文<small>翻譯下方同時顯示原句</small></span>
+          <label class="toggle"><input type="checkbox" id="showOriginal" checked><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 雙向語音 -->
+    <div class="tab-content" id="tab-voice">
+      <div class="section">
+        <div class="toggle-row">
+          <span class="t-lbl">啟用雙向語音<small>把我說的話翻成語音講給對方聽</small></span>
+          <label class="toggle"><input type="checkbox" id="enableOutbound"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span class="t-lbl">語音念出對方的話<small>除了字幕，也把對方翻譯念給我聽</small></span>
+          <label class="toggle"><input type="checkbox" id="ttsForOthers"><span class="slider"></span></label>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><span class="eyebrow">音訊裝置</span><span class="line"></span></div>
+        <div class="row"><span class="lbl">我的麥克風</span><select class="select" id="micDevice"><option value="default">預設</option></select></div>
+        <div class="row"><span class="lbl">語音送往</span><select class="select" id="outputDevice"><option value="default">預設（喇叭）</option></select></div>
+        <p class="note">「語音送往」選 <b>BlackHole</b>，並把 Meet 麥克風也設成 BlackHole，對方才聽得到翻譯語音。</p>
+        <div class="stack" style="margin-top:13px;">
+          <button class="btn btn-ghost full" id="permBtn">🎙 授權麥克風 / 重新偵測裝置</button>
+          <button class="btn btn-ghost full" id="guideBtn">📖 BlackHole 安裝教學</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><span class="eyebrow">AI 語音</span><span class="line"></span></div>
+        <div class="row">
+          <span class="lbl">音色</span>
+          <select class="select" id="ttsVoice">
+            <option value="Kore">Kore（沉穩）</option>
+            <option value="Puck">Puck（活潑）</option>
+            <option value="Charon">Charon（低沉）</option>
+            <option value="Aoede">Aoede（輕快）</option>
+            <option value="Leda">Leda（年輕）</option>
+            <option value="Fenrir">Fenrir（厚實）</option>
+            <option value="Orus">Orus（穩重）</option>
+            <option value="Zephyr">Zephyr（明亮）</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- API -->
+    <div class="tab-content" id="tab-api">
+      <div class="section stack">
+        <div>
+          <div class="api-lbl">Google Gemini API Key <span class="tag them">辨識＋翻譯＋語音</span></div>
+          <input class="input mono" type="password" id="geminiKey" placeholder="AIza...">
+        </div>
+        <button class="btn btn-accent full" id="saveApiBtn">儲存 API Key</button>
+        <div class="hint">🔑 一把金鑰即可（辨識＋翻譯＋語音＋會議記錄全用 Gemini）。<br>到 <b>aistudio.google.com/apikey</b> 免費取得。Key 僅存在本機瀏覽器。</div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn btn-ghost" id="recordsBtn">📁 會議記錄</button>
+    </div>
+  </div>
+  <script src="langs.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
